@@ -8,7 +8,6 @@ def openFile(csv):
     with open(csv,'r') as myfile:
         lines = myfile.readlines()
     return lines
-
 def sort(lines,OutFileSlve, OutFileMstr):
     mstrD = ""
     temp = []
@@ -17,20 +16,23 @@ def sort(lines,OutFileSlve, OutFileMstr):
             if line[0] == "D":
                 temp.append(line)
             else:
-                mstrD += line
+                if line[0] == '2':
+                    mstrD += line
     temp.sort()
     index = 0
     x = False
     for i in range (1,len(temp)):
         if temp[i][2] != temp[index][2]:
-            with open(temp[i-1][:2]+OutFileSlve[3:],'w') as myFile2:
-                myFile2.write(temp[index:i])
+            with open(temp[i-1][:3]+OutFileSlve[3:],'w') as myFile2:
+                for line in temp[index:i]: myFile2.write(line)
             index = i
             x = True
     if not x:
         with open(temp[0][:3]+OutFileSlve[3:],'w') as myFile2:
             for line in temp: myFile2.write(line)
-        
+    if x:
+        with open(temp[-1][:3]+OutFileSlve[3:],'w') as myFile2:
+            for line in temp[index:len(temp)]: myFile2.write(line)
         
     with open(OutFileMstr,'w') as myFile1:
         myFile1.write(mstrD)
