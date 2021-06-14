@@ -5,7 +5,7 @@
 '''
 
 def openFile(csv):
-    with open(csv,'r') as myfile:
+    with open(csv,'r', encoding = "ISO-8859-1") as myfile:
         lines = myfile.readlines()
     return lines
 
@@ -15,7 +15,7 @@ def sort(lines,OutFileSlve, OutFileMstr):
     for line in lines:
         if len(line) > 2:
             try:
-                if line[0] == "D" and line[29] != '0':
+                if line[0] == "D" and line[27] != '0':
                     temp.append(line)
             except IndexError: continue
            
