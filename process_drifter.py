@@ -8,16 +8,22 @@ def openFile(csv):
     with open(csv,'r') as myfile:
         lines = myfile.readlines()
     return lines
+
 def sort(lines,OutFileSlve, OutFileMstr):
     mstrD = ""
     temp = []
     for line in lines:
         if len(line) > 2:
-            if line[0] == "D":
-                temp.append(line)
+            try:
+                if line[0] == "D" and line[29] != '0':
+                    temp.append(line)
+            except IndexError: continue
+           
             else:
-                if line[0] == '2':
-                    mstrD += line
+                try:
+                    if line.split(',')[2] != 0 and line[0] == '2':
+                        mstrD += line
+                except IndexError: continue
     temp.sort()
     index = 0
     x = False
