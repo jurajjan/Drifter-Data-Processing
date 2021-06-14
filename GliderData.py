@@ -7,32 +7,42 @@ def openFile(csv):
         lines = myfile.readlines()
     return lines
 
-def sort(lines):
-    temp1 = ""
-    temp2 = ""
+def sort(lines,OutFileSlve, OutFileMstr):
+    mstrD = ""
+    temp = []
     for line in lines:
-        if len(line) != 0:
-            line.strip('\n')
+        if len(line) > 2:
             if line[0] == "D":
-                temp1 += line
-            else: temp2 += line
-    return temp1,temp2
+                temp.append(line)
+            else:
+                mstrD += line
+    temp.sort()
+    index = 0
+    x = False
+    for i in range (1,len(temp)):
+        if temp[i][2] != temp[index][2]:
+            with open(temp[i-1][:2]+OutFileSlve[3:],'w') as myFile2:
+                myFile2.write(temp[index:i])
+            index = i
+            x = True
+    if not x:
+        with open(temp[0][:3]+OutFileSlve[3:],'w') as myFile2:
+            for line in temp: myFile2.write(line)
+        
+        
+    with open(OutFileMstr,'w') as myFile1:
+        myFile1.write(mstrD)
 
 def main(filename):
     lines = openFile(filename)
-    temp1,temp2 = sort(lines)
     if filename[0] == 'm':
-        OutFileD =  "D01_master_data.txt"
-        OutFile2 =  "master_data.txt"
+        OutFileSlve =  "D01_master_data.txt"
+        OutFileMstr =  "master_data.txt"
     else:
-        OutFileD =  "D01_servant_LoRa_data.txt"
-        OutFile2 =  "D01_servant_1s_data.txt"
+        OutFileSlve =  "D01_servant_LoRa_data.txt"
+        OutFileMstr =  "D01_servant_1s_data.txt"
     
-    with open(OutFileD,'w') as myFile1:
-        myFile1.write(temp1)
-    
-    with open(OutFile2,'w') as myFile2:
-        myFile2.write(temp2)
+    sort(lines,OutFileSlve, OutFileMstr)
     
     
     
