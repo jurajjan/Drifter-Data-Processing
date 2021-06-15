@@ -21,7 +21,7 @@ def sort(lines,OutFileSlve, OutFileMstr):
            
             else:
                 try:
-                    if line.split(',')[2] != 0 and line[0] == '2':
+                    if line.split(',')[2] != '0.00000000' and line[0] == '2':
                         mstrD += line
                 except IndexError: continue
     temp.sort()
