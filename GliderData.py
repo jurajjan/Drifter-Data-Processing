@@ -1,7 +1,9 @@
 
+
 # Created 14/06/2021
 # @Author: Juraj Janekovic
 
+import sys
 import geopy.distance
 from datetime import datetime
 import time
@@ -13,7 +15,7 @@ perth_cords = [-31.984687, 115.835413]
 myMap = folium.Map(location = perth_cords, zoom_start = 13)
 
 colours = {'D01':'blue','D02':'green','D03':'yellow','D04':'purple','D05':'orange',
-               'D06':'pink','D07':'gray','D08':'lightred','D09':'lightgreen','D10':'beige'}
+               'D06':'pink','D07':'beige','D08':'red','D09':'lightgreen'}
 
 def openFile(csv):
     with open(csv,'r', encoding = "ISO-8859-1") as myfile:
@@ -28,6 +30,8 @@ def sort(lines,OutFileSlve, OutFileMstr):
         if len(line) > 2:
             try:
                 if line[0] == "D" and line[29] != '0' and (len(line.split(','))) == 8:
+                    if not isM:
+                        colourD = colours.get(line[0:3])
                     temp.append(line)
             except IndexError: continue
            
@@ -38,12 +42,17 @@ def sort(lines,OutFileSlve, OutFileMstr):
                         mstrD += line
                 except IndexError: continue
     
-    addPoint(mstrTemp[0],'black',True,"Mystery")
     for i in range (1,len(mstrTemp),20):
         l = mstrTemp[i-1].split(',')
         n = mstrTemp[i].split(',')
         speed = CalcSpeed(l[0]+', ' + l[1] + ', ' + l[3] + ', ' + l[2] + ', ' + l[4], n[0]+', ' + n[1] + ', ' + n[3] + ', ' + n[2] + ', ' + n[4])
-        addPoint(mstrTemp[i],'black',True,speed)
+        if isM:
+            addPoint(mstrTemp[0],'black',True,"Mystery")
+            addPoint(mstrTemp[i],'black',True,speed)
+        else: 
+            addPoint(mstrTemp[0],colourD,True,"Mystery")
+            addPoint(mstrTemp[i],colourD,True,speed)
+        
         
                 
     temp.sort()
@@ -81,7 +90,7 @@ def addPoint(line,colour,x,speed):
         coordinate = [float(line.split(',')[3]), float(line.split(',')[2])]
                                     
         folium.CircleMarker(
-        radius = 3,
+        radius = 2,
         location=coordinate,
         color=colour,
         popup= "Date " + line.split(',')[0] + "\n" + "Time " + line.split(',')[1] + "\n" + "Speed " + str(speed),
@@ -95,9 +104,10 @@ def addPoint(line,colour,x,speed):
                 coordinate = [float(line.split(',')[4]),float(line.split(',')[5])]
                 popup1=line.split(',')[:4]
                 
-                folium.Marker(
+                folium.CircleMarker(
+                radius = 2,
                 location=coordinate,
-                icon=folium.Icon(color=colour, icon='circle', prefix='fa'),
+                color = colour,
                 popup = "Slave " + popup1[0] + "\n" + "Date " + popup1[2] + "\n" + "Time " + popup1[3] + "Speed " + str(speed)
                 ).add_to(myMap)
             
@@ -120,19 +130,25 @@ def CalcSpeed(line,line2):
 
     except ValueError:
         return
-   
-def main(filename):
-    
-    lines = openFile(filename)
-    if filename[0] == 'm':
-        OutFileSlve =  "D01_master_data.txt"
-        OutFileMstr =  "master_data.txt"
-    else:
-        OutFileSlve =  "D01_servant_LoRa_data.txt"
-        OutFileMstr =  "D01_servant_1s_data.txt"
-    
-    sort(lines,OutFileSlve, OutFileMstr)
-    myMap.save('map.html')
+
+
+if len(sys.argv) >= 2:
+    for i in range (1,len(sys.argv)):
+        filename = sys.argv[i]  
+        if filename[0] == 'm':
+            isM = True
+        else: isM = False
+        lines = openFile(filename)
+        if filename[0] == 'm':
+            isM = True
+            OutFileSlve =  "D01_master_data.txt"
+            OutFileMstr =  "master_data.txt"
+        else:
+            OutFileSlve =  "D01_servant_LoRa_data.txt"
+            OutFileMstr =  "D01_servant_1s_data.txt"
+        
+        sort(lines,OutFileSlve, OutFileMstr)
+myMap.save('map.html')
     
     
             
