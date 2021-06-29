@@ -30,26 +30,50 @@ def openFile(csv):
     return lines
 
 def sort(lines,OutFileSlve, OutFileMstr):
+    points = []
+    pointsD = []
     mstrD = ""
     mstrTemp = []
     temp = []
+    m = True
+    count = 10
+    countr = 10
     for line in lines:
         if len(line) > 2:
             try:
                 if line[0] == "D" and line[29] != '0' and (len(line.split(','))) == 8:
+                    m = False
+                    if count % 10 == 0:
+                        pointsD.append([float(line.split(',')[5]),float(line.split(',')[4])])
                     if not isM:
                         colourD = colours.get(line[0:3])
                     temp.append(line)
+                    count += 1
             except IndexError: continue
            
             else:
                 try:
                     if line.split(',')[2] != '0.00000000' and line[0] == '2':
+                        if countr % 10 == 0:
+                            points.append([float(line.split(',')[3]),float(line.split(',')[2])])
                         mstrTemp.append(line)
                         mstrD += line
+                        countr += 1
                 except IndexError: continue
+
+    prevs = points[0]
+    for i in range (len(points)):
+        if CalcDistance(prevs[0], prevs[1], points[i][0],points[i][1]) < 0.5:      
+            folium.PolyLine([prevs,points[i]], color=colourD, weight=2.5, opacity=1).add_to(myMap)
+        prevs = points[i]
     
-    for i in range (1,len(mstrTemp),20):
+    prevs = pointsD[0]
+    for i in range (len(pointsD)):
+        if CalcDistance(prevs[0], prevs[1], pointsD[i][0],pointsD[i][1]) < 0.5:      
+            folium.PolyLine([prevs,pointsD[i]], color=colourD, weight=2.5, opacity=1).add_to(myMap)
+        prevs = pointsD[i]
+    
+    for i in range (1,len(mstrTemp),60):
         l = mstrTemp[i-1].split(',')
         n = mstrTemp[i].split(',')
         speed = CalcSpeed(l[0]+', ' + l[1] + ', ' + l[3] + ', ' + l[2] + ', ' + l[4], n[0]+', ' + n[1] + ', ' + n[3] + ', ' + n[2] + ', ' + n[4])
@@ -90,14 +114,14 @@ def sort(lines,OutFileSlve, OutFileMstr):
     with open(OutFileMstr,'w') as myFile1:
         myFile1.write(mstrD)
 
-
+    
 def addPoint(line,colour,x,speed):
     if x:
         
         coordinate = [float(line.split(',')[3]), float(line.split(',')[2])]
                                     
         folium.CircleMarker(
-        radius = 2,
+        radius = 1.5,
         location=coordinate,
         color=colour,
         popup= "Date " + line.split(',')[0] + "\n" + "Time " + line.split(',')[1] + "\n" + "Speed " + str(speed),
@@ -112,7 +136,7 @@ def addPoint(line,colour,x,speed):
                 popup1=line.split(',')[:4]
                 
                 folium.CircleMarker(
-                radius = 2,
+                radius = 1.5,
                 location=coordinate,
                 color = colour,
                 popup = "Slave " + popup1[0] + "\n" + "Date " + popup1[2] + "\n" + "Time " + popup1[3] + "Speed " + str(speed)
@@ -120,7 +144,15 @@ def addPoint(line,colour,x,speed):
             
         except ValueError:
             return
+
+
+def CalcDistance(lat,long, lat2, long2):
+    coords_1 = (lat, long)
+    coords_2 = (lat2, long2)
         
+    dist = geopy.distance.distance(coords_1, coords_2).km
+    return round(dist,5)
+
 def CalcSpeed(line,line2):
     try:
         fmt = '%Y-%m-%d %H:%M:%S'
@@ -129,10 +161,9 @@ def CalcSpeed(line,line2):
         diff = d2 -d1
         diff_hours = (diff.days * 24) + (diff.seconds/3600)
         
-        coords_1 = (float(line.split(',')[2]), float(line.split(',')[3]))
-        coords_2 = (float(line2.split(',')[2]), float(line2.split(',')[3]))
-        
-        ans = (geopy.distance.distance(coords_1, coords_2).km)/diff_hours
+        dist = CalcDistance(float(line.split(',')[2]), float(line.split(',')[3]), float(line2.split(',')[2]), float(line2.split(',')[3]))
+    
+        ans = dist/diff_hours
         return round(ans,0)
 
     except ValueError:
