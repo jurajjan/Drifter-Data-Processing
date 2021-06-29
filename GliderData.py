@@ -13,6 +13,13 @@ import pandas as pd
 
 perth_cords = [-31.984687, 115.835413]
 myMap = folium.Map(location = perth_cords, zoom_start = 13)
+tile = folium.TileLayer(
+    tiles = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        attr = 'Esri',
+        name = 'Esri Satellite',
+        overlay = False,
+        control = True
+        ).add_to(myMap)
 
 colours = {'D01':'blue','D02':'green','D03':'yellow','D04':'purple','D05':'orange',
                'D06':'pink','D07':'beige','D08':'red','D09':'lightgreen'}
